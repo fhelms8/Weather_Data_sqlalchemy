@@ -1,3 +1,4 @@
+from threading import active_count
 import pandas as pd
 import datetime as dt
 import numpy as np
@@ -47,8 +48,8 @@ def Home_page():
         f"/api/v1.0/precipitation</br>"
         f"/api/v1.0/stations</br>"
         f"/api/v1.0/tobs</br>"
-        f"/api/v1.0/<start></br>"
-        f"/api/v1.0/<start>/<end></br>"
+        f"/api/v1.0/&lt;start&gt;</br>"
+        f"/api/v1.0/&lt;start&gt;/&lt;end&gt;</br>"
     )
 
 # /api/v1.0/precipitation - Convert the query results to a dictionary using date as the key and prcp as the value.
@@ -108,12 +109,13 @@ def stations():
 
 # Create new route to list all Stations
 
-session = Session(engine)
+
 # Query the dates and temperature observations of the most active station for the last year of data.
 
 @app.route("/api/v1.0/tobs")
 def tobs():
     """Return list of all Stations """
+    session = Session(engine)
     one_year_ago = dt.date(2017, 8, 18) - dt.timedelta(days=365)
     result = session.query(Measurement.tobs, Measurement.date).filter(Measurement.station == 'USC00519281').filter(Measurement.date >= one_year_ago).all()
 
@@ -130,21 +132,32 @@ def tobs():
 
 # Start session for next start/end route 
 
-session = Session(engine)
+
 
 # Create route 
-
-@app.route("/api/v1.0/<start>", defaults=("/api/v1.0/<start>/<end>"))
+# Return a JSON list of the minimum temperature, the average temperature, and the max temperature for a given start or start-end range.
+@app.route("/api/v1.0/<start>")
 @app.route("/api/v1.0/<start>/<end>")
 
-# Return a JSON list of the minimum temperature, the average temperature, and the max temperature for a given start or start-end range.
+def temp(start, end = None):
+        """Return list of all temperatures"""
+        session = Session(engine)
+        start_date = session.query(Measurement.tobs, Measurement.date, func.min(Measurement.tobs), func.avg (Measurement.tobs), func.max(Measurement.tobs)).filter(Measurement.date >= start).filter(Measurement.date <= end).order_by(Measurement.date.desc())
+        str(start_date[0])
+        print(str(start_date[0]))
 
-def temp(start, end):
+        session.close()
+
+        start_temp= {}
+        for temp, date, min, avg, max in start_date:
+            if temp != None:
+                start_temp[date] = [temp, min, avg, max]
+                
         
 
-        if end != None
-        (Measurement.tobs, func.min(Measurement.tobs), func.avg (Measurement.tobs), func.max(Measurement.tobs))
+        return jsonify(start_temp)
 
+        # (Measurement.tobs, func.min(Measurement.tobs), func.avg (Measurement.tobs), func.max(Measurement.tobs))
 
 
 
