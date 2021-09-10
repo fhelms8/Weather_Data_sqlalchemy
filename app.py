@@ -5,7 +5,7 @@ import sqlalchemy
 from sqlalchemy.ext.automap import automap_base
 from sqlalchemy.orm import Session
 from sqlalchemy import create_engine, func
-from flask import Flask, jsonify
+from flask import Flask, json, jsonify
 
 ##################
 # Database Setup
@@ -87,30 +87,49 @@ session.close()
 
 
 # Create new route to list all Stations
+
 session = Session(engine)   
+
+# Return a JSON list of stations from the dataset.
+
 @app.route("/api/v1.0/stations")
 def stations():
     """ Return list of all Stations """
-    station_list = session.query(Station.station).all()
+    all_stations = session.query(Station.station).all()
 
     session.close()
 
 # Covenvert list into dict. 
 
-    all_stations = []
-    for station in station_list:
-        station_dict = {}
-        station_dict = station
-        all_stations.append(station_dict)
+    station_list = list(np.ravel(all_stations))
 
-    return jsonify(all_stations)
+    return jsonify(station_list)
 
 
 # Create new route to list all Stations
+
 session = Session(engine)
+# Query the dates and temperature observations of the most active station for the last year of data.
+
 @app.route("/api/v1.0/tobs")
 def tobs():
     """Return list of all Stations """
+    one_year_ago = dt.date(2017, 8, 18) - dt.timedelta(days=365)
+    result = session.query(Measurement.tobs, Measurement.date).filter(Measurement.station == 'USC00519281').filter(Measurement.date >= one_year_ago).all()
+
+    session.close()
+    
+
+ 
+    temp_dict= {}
+    for temp, date in result:
+        if temp != None:
+            temp_dict[date] = temp
+    return jsonify(temp_dict)
+
+
+
+
 
 
 
