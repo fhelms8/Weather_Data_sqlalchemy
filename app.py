@@ -128,6 +128,26 @@ def tobs():
     return jsonify(temp_dict)
 
 
+# Start session for next start/end route 
+
+session = Session(engine)
+
+# Create route 
+
+@app.route("/api/v1.0/<start>", defaults=("/api/v1.0/<start>/<end>"))
+@app.route("/api/v1.0/<start>/<end>")
+
+# Return a JSON list of the minimum temperature, the average temperature, and the max temperature for a given start or start-end range.
+
+def temp(start, end):
+        
+
+        if end != None
+        (Measurement.tobs, func.min(Measurement.tobs), func.avg (Measurement.tobs), func.max(Measurement.tobs))
+
+
+
+
 
 
 
